@@ -169,6 +169,8 @@ axme mesh cost top --period day
 
 ## Dashboard
 
+![Agent Mesh Dashboard](mesh-dashboard.png)
+
 View cost data at [mesh.axme.ai](https://mesh.axme.ai) with per-agent breakdown:
 
 ```
@@ -187,6 +189,8 @@ Cost Policy Violations (last 7 days):
   Mar 28  data-pipeline     $52.10 / $50.00 day limit  -> PAUSED
   Mar 25  research-agent    $4.87 / $5.00 intent limit -> ALERTED
 ```
+
+![Agent Mesh Policies](mesh-policies.png)
 
 Drill into any agent to see cost per intent, per model, per hour.
 
