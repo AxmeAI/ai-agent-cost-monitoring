@@ -180,7 +180,7 @@ View cost data at [mesh.axme.ai](https://mesh.axme.ai) with per-agent breakdown:
 | research-agent      | $12.47   | $47.82   | $189.30   | OK     |
 | support-agent       | $8.23    | $31.05   | $142.18   | OK     |
 | onboarding-agent    | $3.10    | $14.22   | $58.91    | OK     |
-| data-pipeline       | $0.00   | $22.40   | $89.60    | PAUSED |
+| data-pipeline       | $0.00    | $22.40   | $89.60    | PAUSED |
 +---------------------+----------+----------+-----------+--------+
 | Total               | $23.80   | $115.49  | $479.99   |        |
 +---------------------+----------+----------+-----------+--------+
