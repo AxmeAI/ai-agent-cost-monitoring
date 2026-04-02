@@ -171,28 +171,9 @@ axme mesh cost top --period day
 
 ![Agent Mesh Dashboard](mesh-dashboard.png)
 
-View cost data at [mesh.axme.ai](https://mesh.axme.ai) with per-agent breakdown:
-
-```
-+---------------------+----------+----------+-----------+--------+
-| Agent               | Today    | This Wk  | This Mo   | Status |
-+---------------------+----------+----------+-----------+--------+
-| research-agent      | $12.47   | $47.82   | $189.30   | OK     |
-| support-agent       | $8.23    | $31.05   | $142.18   | OK     |
-| onboarding-agent    | $3.10    | $14.22   | $58.91    | OK     |
-| data-pipeline       | $0.00    | $22.40   | $89.60    | PAUSED |
-+---------------------+----------+----------+-----------+--------+
-| Total               | $23.80   | $115.49  | $479.99   |        |
-+---------------------+----------+----------+-----------+--------+
-
-Cost Policy Violations (last 7 days):
-  Mar 28  data-pipeline     $52.10 / $50.00 day limit  -> PAUSED
-  Mar 25  research-agent    $4.87 / $5.00 intent limit -> ALERTED
-```
-
 ![Agent Mesh Policies](mesh-policies.png)
 
-Drill into any agent to see cost per intent, per model, per hour.
+View cost data at [mesh.axme.ai](https://mesh.axme.ai) with per-agent breakdown. Drill into any agent to see cost per intent, per model, per hour.
 
 ---
 
