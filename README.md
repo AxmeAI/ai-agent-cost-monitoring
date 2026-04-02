@@ -104,66 +104,29 @@ def call_llm(prompt: str) -> str:
     cost_usd = (tokens_in * 0.03 + tokens_out * 0.06) / 1000
 
     # Report to AXME mesh
-    client.mesh.report_metric(
-        agent="agent://myorg/production/research-agent",
-        intent_id=current_intent_id,
-        cost_usd=cost_usd,
-        metadata={
-            "model": "gpt-4",
-            "tokens_in": tokens_in,
-            "tokens_out": tokens_out,
-        },
-    )
+    client.mesh.report_metric(cost_usd=cost_usd)
 
     return response.choices[0].message.content
 ```
 
 ### Set a cost policy
 
-```python
-# Set budget limit: $50/day for this agent
-client.mesh.set_cost_policy(
-    agent="agent://myorg/production/research-agent",
-    rules=[
-        {
-            "period": "day",
-            "limit_usd": 50.00,
-            "action": "pause",           # pause | alert | kill
-            "notify": ["ops@company.com"],
-        },
-        {
-            "period": "intent",
-            "limit_usd": 5.00,
-            "action": "alert",           # single task shouldn't cost >$5
-            "notify": ["ops@company.com"],
-        },
-    ],
-)
-```
-
-### Or via CLI
-
 ```bash
-# Set daily budget
-axme mesh cost-policy set \
-  --agent agent://myorg/production/research-agent \
-  --period day \
-  --limit 50.00 \
-  --action pause
-
-# Check current spend
-axme mesh cost show --agent agent://myorg/production/research-agent
-# Agent: research-agent
-# Today:     $12.47 / $50.00 (24.9%)
-# This week: $47.82
-# This month: $189.30
-
-# List top spenders
-axme mesh cost top --period day
-# 1. research-agent      $12.47
-# 2. support-agent       $8.23
-# 3. onboarding-agent    $3.10
+# Set budget limit via API
+curl -X PUT https://api.cloud.axme.ai/v1/mesh/agents/{address_id}/policies/cost \
+  -H "x-api-key: $AXME_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "max_intents_per_day": 500,
+    "max_cost_per_day_usd": 50.00,
+    "max_intents_per_hour": 100,
+    "action_on_breach": "block"
+  }'
 ```
+
+Or set it from the dashboard at [mesh.axme.ai](https://mesh.axme.ai) - select agent, set cost policy, save.
+
+When the agent exceeds $50/day, the gateway returns HTTP 429 on new intents. No notifications (yet) - check the dashboard.
 
 ---
 
@@ -173,7 +136,7 @@ axme mesh cost top --period day
 
 ![Agent Mesh Policies](mesh-policies.png)
 
-View cost data at [mesh.axme.ai](https://mesh.axme.ai) with per-agent breakdown. Drill into any agent to see cost per intent, per model, per hour.
+View cost data at [mesh.axme.ai](https://mesh.axme.ai) with per-agent breakdown. Day, week, month views.
 
 ---
 
@@ -192,15 +155,10 @@ View cost data at [mesh.axme.ai](https://mesh.axme.ai) with per-agent breakdown.
 
 1. Agent makes LLM calls and tracks token usage locally
 2. Every heartbeat (30s), agent reports `cost_usd` to AXME gateway
-3. Gateway **accumulates** cost per agent, per intent, per time window
-4. Gateway **checks cost policies** on every heartbeat
-5. If a policy limit is exceeded:
-   - `alert` - send notification, agent continues
-   - `pause` - send notification, pause intent delivery to agent
-   - `kill` - send notification, terminate active intents
-6. Dashboard shows real-time cost per agent with drill-down
-
-Cost data is stored alongside intent lifecycle data - same PostgreSQL, same retention, same audit trail. No separate billing database.
+3. Gateway **accumulates** cost per agent per day/hour window
+4. Gateway **checks cost policies** on every new intent
+5. If limit exceeded, gateway returns HTTP 429 (`action_on_breach: "block"`)
+6. Dashboard shows real-time cost per agent with day/week/month views
 
 ---
 
@@ -234,57 +192,12 @@ def process_ticket(ticket):
 
     # 2 lines: calculate and report
     cost = (response.usage.prompt_tokens * 0.03 + response.usage.completion_tokens * 0.06) / 1000
-    client.mesh.report_metric(cost_usd=cost, intent_id=intent_id)
+    client.mesh.report_metric(cost_usd=cost)
 
     return response.choices[0].message.content
 
 # Cost visible in real time. Per agent. Per intent.
 # Budget exceeded? Agent pauses automatically.
-```
-
----
-
-## Multi-Model Cost Tracking
-
-Agents often use multiple models. AXME tracks cost per model:
-
-```python
-MODEL_COSTS = {
-    "gpt-4":       {"input": 0.03,  "output": 0.06},
-    "gpt-4o":      {"input": 0.005, "output": 0.015},
-    "gpt-4o-mini": {"input": 0.00015, "output": 0.0006},
-    "claude-sonnet-4-20250514":  {"input": 0.003, "output": 0.015},
-}
-
-def call_llm(model: str, prompt: str) -> str:
-    response = openai.chat.completions.create(
-        model=model,
-        messages=[{"role": "user", "content": prompt}],
-    )
-
-    rates = MODEL_COSTS[model]
-    cost = (
-        response.usage.prompt_tokens * rates["input"]
-        + response.usage.completion_tokens * rates["output"]
-    ) / 1000
-
-    client.mesh.report_metric(
-        cost_usd=cost,
-        intent_id=current_intent_id,
-        metadata={"model": model},
-    )
-
-    return response.choices[0].message.content
-```
-
-Dashboard breaks down cost by model:
-
-```
-research-agent cost breakdown (today):
-  gpt-4:          $9.20  (73.8%)
-  gpt-4o:         $2.85  (22.8%)
-  gpt-4o-mini:    $0.42  (3.4%)
-  Total:          $12.47
 ```
 
 ---
