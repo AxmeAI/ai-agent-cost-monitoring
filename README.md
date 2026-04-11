@@ -5,7 +5,7 @@ Your AI agent spent $500 on OpenAI overnight and nobody noticed. AXME tracks cos
 One runaway loop. One missing stop condition. One agent calling GPT-4 in a retry loop for 8 hours. Monday morning: a $500 invoice and no way to trace which agent, which task, or which prompt caused it.
 
 > **Alpha** - Built with [AXME](https://github.com/AxmeAI/axme) (AXP Intent Protocol).
-> [cloud.axme.ai](https://cloud.axme.ai) - [hello@axme.ai](mailto:hello@axme.ai)
+> [cloud.axme.ai](https://cloud.axme.ai) - [contact@axme.ai](mailto:contact@axme.ai)
 
 ---
 
